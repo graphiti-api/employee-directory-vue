@@ -44,4 +44,8 @@
 .persist {
   padding: 1rem;
 }
+
+h3 {
+  margin-bottom: 1.5rem;
+}
 </style>

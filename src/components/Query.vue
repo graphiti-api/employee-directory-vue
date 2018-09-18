@@ -1,5 +1,6 @@
 <template>
   <div class="card query">
+    <h3>Query</h3>
     <div class='search-controls'>
       <form v-on:submit.prevent="search()">
         <div class="row">
