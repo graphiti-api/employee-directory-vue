@@ -23,10 +23,10 @@
     <table class="table">
       <thead>
         <tr>
-          <th>Name</th>
-          <th>Age</th>
-          <th>Position</th>
-          <th>Department</th>
+          <th><a @click="doSort('last_name')">Name</a></th>
+          <th><a @click="doSort('age')">Age</a></th>
+          <th><a @click="doSort('title')">Position</a></th>
+          <th><a @click="doSort('department_name')">Department</a></th>
         </tr>
       </thead>
 
@@ -45,13 +45,18 @@
 <script lang="ts">
 import Vue from 'vue';
 import { Employee } from "@/models"
-import { Scope, WhereClause } from "spraypaint"
+import { Scope, WhereClause, SortScope } from "spraypaint"
 
 export default Vue.extend({
   name: 'query',
   data() {
+    let sort : SortScope = {
+      created_at: 'desc'
+    }
+
     return {
       employees: [] as Employee[],
+      sort,
       query: {
         first_name: {},
         last_name: {}
@@ -65,12 +70,21 @@ export default Vue.extend({
     scope(): Scope<typeof Employee> {
       return Employee
         .where(this.query)
+        .order(this.sort)
         .includes({ current_position: "department" })
     }
   },
   methods: {
     async search() {
       this.employees = (await this.scope.all()).data
+    },
+    doSort(attribute: string) {
+      if (this.sort[attribute] && this.sort[attribute] === "desc") {
+        this.sort = {[attribute]: "asc"}
+      } else {
+        this.sort = {[attribute]: "desc"}
+      }
+      this.search()
     }
   }
 });
