@@ -30,6 +30,10 @@
             <div class="form-group">
               <select class="form-control">
                 <option disabled :value="undefined">Select a Department</option>
+
+                <option v-for="department in possibleDepartments" :key="department.id" :value="department">
+                  {{ department.name }}
+                </option>
               </select>
             </div>
           </div>
@@ -42,16 +46,27 @@
 
 <script lang="ts">
 import Vue from 'vue';
-import { Employee, Position } from "@/models"
+import { Employee, Position, Department } from "@/models"
 
 export default Vue.extend({
   name: 'persist',
+  created() {
+    this.fetchDepartments()
+  },
   data () {
     let employee = new Employee({
       positions: [new Position()]
     })
 
-    return { employee }
+    return {
+      employee,
+      possibleDepartments: [] as Department[]
+    }
+  },
+  methods: {
+    async fetchDepartments() {
+      this.possibleDepartments = (await Department.all()).data
+    }
   }
 });
 </script>
