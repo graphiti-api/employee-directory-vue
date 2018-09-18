@@ -42,7 +42,11 @@
 
       <tbody>
         <tr v-for="employee in employees" :key="employee.id">
-          <td>{{ employee.firstName }} {{ employee.lastName }}</td>
+          <td>
+            <a @click="selectEmployee(employee)">
+              {{ employee.fullName }}
+            </a>
+          </td>
           <td>{{ employee.age }}</td>
           <td>{{ employee.currentPosition.title }}</td>
           <td>{{ employee.currentPosition.department.name }}</td>
@@ -56,6 +60,7 @@
 import Vue from 'vue';
 import { Employee } from "@/models"
 import { Scope, WhereClause, SortScope } from "spraypaint"
+import EventBus from "@/event-bus"
 
 export default Vue.extend({
   name: 'query',
@@ -76,6 +81,9 @@ export default Vue.extend({
     }
   },
   created() {
+    EventBus.$on('employee_save', (employee: Employee) => {
+      this.search()
+    })
     this.search()
   },
   computed: {
@@ -115,6 +123,9 @@ export default Vue.extend({
       this.currentPage = this.currentPage + count
       this.search()
     },
+    selectEmployee(employee: Employee): void {
+      EventBus.$emit('employee_selected', employee.id)
+    }
   }
 });
 </script>
@@ -122,6 +133,11 @@ export default Vue.extend({
 <style lang="scss" scoped>
 .meta {
   margin-top: 0.5rem;
+}
+
+table tbody td a {
+  color: #007bff !important;
+  cursor: pointer;
 }
 
 .pagination {

@@ -1,5 +1,5 @@
 <template>
-  <div class="persist card form clearfix">
+  <div class="persist card form clearfix" :class="{ success }">
     <h3>Persist</h3>
     <form @submit.prevent="submit()">
       <div class="row">
@@ -57,12 +57,17 @@
 </template>
 
 <script lang="ts">
-import Vue from 'vue';
+import Vue from 'vue'
+import EventBus from "@/event-bus"
 import { Employee, Position, Department } from "@/models"
 
 export default Vue.extend({
   name: 'persist',
   created() {
+    EventBus.$on('employee_selected', (employeeId: string) => {
+      this.loadEmployee(employeeId)
+    })
+
     this.fetchDepartments()
   },
   data () {
@@ -72,6 +77,7 @@ export default Vue.extend({
 
     return {
       employee,
+      success: false as boolean,
       possibleDepartments: [] as Department[]
     }
   },
@@ -81,6 +87,23 @@ export default Vue.extend({
     },
     async submit() {
       await this.employee.save({ with: { positions: "department" }})
+
+      const success = await this.employee
+        .save({ with: { positions: "department" }})
+      if (success) {
+        EventBus.$emit("employee_save", this.employee)
+        this.success = true
+        let reset = () => {
+          this.success = false
+        }
+        setTimeout(reset, 2000)
+      }
+    },
+    async loadEmployee(employeeId: string) {
+      let { data } = await Employee
+        .includes({ positions: "department" })
+        .find(employeeId)
+       if (data) this.employee = data
     },
     addPosition() {
       this.employee.positions.unshift(new Position())
@@ -93,11 +116,20 @@ export default Vue.extend({
 </script>
 
 <style lang="scss" scoped>
+@keyframes colorchange {
+  0%   {background: #C8E6C9;}
+  100% {background: transparent;}
+}
+
 input + p, select + p {
-  color: red;
+  colr: red;
   float: left;
 }
  select + p {
   margin-left: 15px;
+}
+
+.success {
+  animation: colorchange 2000ms;
 }
 </style>
