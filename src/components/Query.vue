@@ -17,6 +17,11 @@
             </div>
 
             <div class="meta">
+              <div class="float-right pagination">
+                <a v-if="hasPrevPage" @click="paginate(true)">&laquo; Prev</a>
+                <a v-if="hasNextPage" @click="paginate()">Next &raquo;</a>
+              </div>
+
               <span class="float-right total">Total: {{totalCount}}</span>
             </div>
           </div>
@@ -62,6 +67,7 @@ export default Vue.extend({
       employees: [] as Employee[],
       sort,
       totalCount: null as number | null,
+      currentPage: 1 as number,
       query: {
         first_name: {},
         last_name: {}
@@ -76,8 +82,16 @@ export default Vue.extend({
       return Employee
         .where(this.query)
         .order(this.sort)
+        .page(this.currentPage)
+        .per(10)
         .stats({ total: "count" })
         .includes({ current_position: "department" })
+    },
+    hasPrevPage() : boolean {
+      return this.currentPage > 1
+    },
+    hasNextPage() : boolean {
+      return (this.currentPage * 10) < (this.totalCount || 0)
     }
   },
   methods: {
@@ -93,7 +107,13 @@ export default Vue.extend({
         this.sort = {[attribute]: "desc"}
       }
       this.search()
-    }
+    },
+    paginate(back: boolean = false) {
+      let count = 1
+      if (back) count = -1
+      this.currentPage = this.currentPage + count
+      this.search()
+    },
   }
 });
 </script>
@@ -101,5 +121,19 @@ export default Vue.extend({
 <style lang="scss" scoped>
 .meta {
   margin-top: 0.5rem;
+}
+
+.pagination {
+  margin-left: 1rem;
+
+  a {
+    &:hover {
+      color: darken(#90CAF9, 20%);
+    }
+
+    &:nth-child(2) {
+      margin-left: 0.5rem;
+    }
+  }
 }
 </style>
