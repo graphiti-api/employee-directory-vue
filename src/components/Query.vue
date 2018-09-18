@@ -15,6 +15,10 @@
             <div class="clearfix">
               <button class="btn btn-lg btn-primary float-right" type="submit">Search</button>
             </div>
+
+            <div class="meta">
+              <span class="float-right total">Total: {{totalCount}}</span>
+            </div>
           </div>
         </div>
       </form>
@@ -57,6 +61,7 @@ export default Vue.extend({
     return {
       employees: [] as Employee[],
       sort,
+      totalCount: null as number | null,
       query: {
         first_name: {},
         last_name: {}
@@ -71,12 +76,15 @@ export default Vue.extend({
       return Employee
         .where(this.query)
         .order(this.sort)
+        .stats({ total: "count" })
         .includes({ current_position: "department" })
     }
   },
   methods: {
     async search() {
-      this.employees = (await this.scope.all()).data
+      let { data, meta } = await this.scope.all()
+      this.employees = data
+      this.totalCount = meta.stats.total.count
     },
     doSort(attribute: string) {
       if (this.sort[attribute] && this.sort[attribute] === "desc") {
@@ -89,3 +97,9 @@ export default Vue.extend({
   }
 });
 </script>
+
+<style lang="scss" scoped>
+.meta {
+  margin-top: 0.5rem;
+}
+</style>
